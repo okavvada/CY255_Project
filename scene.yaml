@@ -1,11 +1,9 @@
-# Import existing Mapzen basemap
-# See additional basemaps at https://mapzen.com/documentation/mapzen-js/api-reference/#basemap-styles
 import: https://mapzen.com/carto/zinc-style/4/zinc-style.yaml
 
 sources:
     polygons_in_polls:
         type: GeoJSON
-        url: https://gist.githubusercontent.com/okavvada/926f667c6a0a20acc689df75147e8ec4/raw/b69a12d0317067e4e6f2a2c349e21b5f215c5a25/tabblocks_water.geojson
+        url: https://gist.githubusercontent.com/okavvada/bdffbfc75104547916ee3ffb79dc1865/raw/1a47a5f8ef288a84146ee682f1dc225ec28d16e0/tabblocks_water.geojson
 
 styles:
     choropleth:
@@ -17,11 +15,11 @@ layers:
         data: { source: polygons_in_polls}
         draw:
             choropleth:
-                order: global.sdk_order_under_roads_0
+                order: 10000
                 color: |
                     function() {
                         var count = feature.total_water;
-                        var OrRd = ['fef0d9', 'fdcc8a', 'fc8d59', 'e34a33'];
+                        var OrRd = ['34d84c', '3964db', 'd18a08', 'c60505'];
                         var color =
                         count = 0 ? '000' :
                         count < 0.002 ? OrRd[0] :
@@ -30,3 +28,7 @@ layers:
                         OrRd[3] ;
                         return "#" + color;
                     }
+            lines:
+                width: 1px
+                color: '#000'
+                order: 100000
