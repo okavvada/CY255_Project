@@ -1,3 +1,3 @@
 # Import existing Mapzen basemap
 # See additional basemaps at https://mapzen.com/documentation/mapzen-js/api-reference/#basemap-styles
-import: https://mapzen.com/carto/refill-style/4/refill-style.yaml
+import: https://mapzen.com/carto/zinc-style/4/zinc-style.yaml
