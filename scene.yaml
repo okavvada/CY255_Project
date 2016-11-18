@@ -15,6 +15,7 @@ layers:
         data: { source: polygons_in_polls}
         draw:
             choropleth:
+                interactive: true
                 order: 10000
                 color: |
                     function() {
