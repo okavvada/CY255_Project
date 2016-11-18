@@ -1,80 +1,46 @@
-map = (function () {
 
-	var picking = false;
+// Feature selection
+function initFeatureSelection () {
+    var popup = document.getElementById('popup'); // click-popup
 
-	    // Feature selection
-    function initFeatureSelection () {
-        // Selection info shown on hover
-        var selection_info = document.createElement('div');
-        selection_info.setAttribute('class', 'label');
-        selection_info.style.display = 'block';
-        selection_info.style.zindex = 1000;
+    // feature edit popup
+    map.getContainer().addEventListener('mousemove', function (event) {
+        picking = true;
+        latlng = map.mouseEventToLatLng(event);
 
-        // Show selected feature on hover
-        map.getContainer().addEventListener('mousemove', function (event) {
-            if (picking) return;
-            var pixel = { x: event.clientX, y: event.clientY };
+        var pixel = { x: event.clientX, y: event.clientY };
 
-            scene.getFeatureAt(pixel).then(function(selection) {    
-                if (!selection) {
-                    return;
-                }
-                var feature = selection.feature;
-                if (feature != null) {
+        scene.getFeatureAt(pixel).then(function(selection) {
+            if (!selection || selection.feature == null || selection.feature.properties == null) {
+                picking = false;
+                popup.style.visibility = 'hidden';
+                return;
+            }                
+            var properties = selection.feature.properties;
+            
+            // generate osm edit link
+            var url = 'https://www.openstreetmap.org/edit?';
+            var position = '19' + '/' + latlng.lat + '/' + latlng.lng;
 
-                    var label = '';
-                    if (feature.properties != null) {
-                        var sorted = [];
-                        var count = 0;
-                        Object.keys(feature.properties)
-                            .sort()
-                            .forEach(function(v, i) {
-                                sorted.push([v, feature.properties[v]]);
-                                count++;
-                            });
-                        label = "";
-                        label += "layer : "+feature.layers+"<br>";
+            if (properties.id) {
+                url += 'way=' + properties.id + '#map=' + position;
+            }
 
-                        for (x in sorted) {
-                            key = sorted[x][0]
-                            val = sorted[x][1];
-                            label += "<span class='labelLine' key='"+key+"' value='"+val+"' onclick='setValuesFromSpan(this)'>"+key+" : "+val+"</span><br>";
-                        }
-                    }
+            var josmUrl = 'http://www.openstreetmap.org/edit?editor=remote#map='+position;
 
-                    if (label != '') {
-                        selection_info.style.left = (pixel.x + 5) + 'px';
-                        selection_info.style.top = (pixel.y + 15) + 'px';
-                        selection_info.innerHTML = '<span class="labelInner">' + label + '</span>';
-                        map.getContainer().appendChild(selection_info);
-                    }
-                    else if (selection_info.parentNode != null) {
-                        selection_info.parentNode.removeChild(selection_info);
-                    }
-                }
-                else if (selection_info.parentNode != null) {
-                    selection_info.parentNode.removeChild(selection_info);
-                }
-            });
-
-            // Don't show labels while panning
-            if (scene.panning == true) {
-                if (selection_info.parentNode != null) {
-                    selection_info.parentNode.removeChild(selection_info);
-                }
+            popup.style.left = (pixel.x + 0) + 'px';
+            popup.style.top = (pixel.y + 0) + 'px';
+            
+            if (properties.name == undefined) {
+                popup.style.visibility = 'visible';
+                popup.innerHTML = '<span class="labelInner">' + 'You found an unnamed street!' + '</span><br>';
+                popup.appendChild(createEditLinkElement(url, 'iD', 'Edit with iD ➹'));
+                popup.appendChild(createEditLinkElement(josmUrl, 'JOSM', 'Edit with JOSM ➹'));
             }
         });
+    });
 
-        // toggle popup picking state
-        map.getContainer().addEventListener('click', function (event) {
-            picking = !picking;
-        });
-        // toggle popup picking state
-        map.getContainer().addEventListener('drag', function (event) {
-            picking = false;
-        });
-    }
-
-        return map;
-
-}());
+    map.getContainer().addEventListener('mousedown', function (event) {
+        popup.style.visibility = 'hidden';
+    });
+}
