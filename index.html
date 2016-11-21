@@ -6,24 +6,69 @@
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
     <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
-
     <script src="https://mapzen.com/js/mapzen.min.js"></script>
     <script src="https://mapzen.com/tangram/0.8/tangram.min.js"></script>
+    <link rel="stylesheet" href="https://tangrams.github.io/ux_layers/ux_layers.css" />
+    <script type="text/javascript" src="https://tangrams.github.io/ux_layers/ux_layers.js"></script>
+    
 
   </head>
   <body>
     <div id="map"></div>
-    <script>
-      var austin = [30.283747, -97.706758];
+    
+<script type="text/javascript">
+            var map = (function () {
 
-      var map = L.Mapzen.map('map', {
-        center: austin,
-        zoom: 12,
-        scene: 'scene.yaml',
-      }); 
+              var austin = [30.283747, -97.706758, 3.6];
+                'use strict';
+                var map_start_location = [30.283747, -97.706758];
+                /*** URL parsing ***/
+                // leaflet-style URL hash pattern:
+                // ?style.yaml#[zoom],[lat],[lng]
+                var url_hash = window.location.hash.slice(1).split('/');
+                if (url_hash.length == 3) {
+                    map_start_location = [url_hash[1],url_hash[2], url_hash[0]];
+                    // convert from strings
+                    map_start_location = map_start_location.map(Number);
+                }
+                /*** Map ***/
+                var map = L.map('map', {
+                    maxZoom: 20,
+                    zoom: 12,
+                    trackResize: true,
+                    keyboard: false
+                });
+                var layer = Tangram.leafletLayer({
+                    // scene: 'https://tangrams.github.io/tangram-sandbox/styles/callejas.yaml',
+                    scene: 'scene.yaml',
+                    introspection: true,
+                    attribution: '&copy; OSM contributors | <a href="https://mapzen.com" target="_blank">Mapzen</a>'
+                });
+
+                window.layer = layer;
+                var scene = layer.scene;
+                window.scene = scene;
+                map.setView(map_start_location.slice(0, 2), map_start_location[2]);
+                
+                // Resize map to window
+                function resizeMap() {
+                    document.getElementById('map').style.width = window.innerWidth + 'px';
+                    document.getElementById('map').style.height = window.innerHeight + 'px';
+                    map.invalidateSize(false);
+                }
+                window.addEventListener('resize', resizeMap);
+                resizeMap();
+                window.addEventListener('load', function () {
+                    // Adding Tangram Layer to map
+                    layer.addTo(map);
+                    // Add layer explorer
+                    map.addControl(L.uxLayers({ scene: scene, layer: layer }));
+                });
+                return map;
+            }());
 
 
-      var legend = L.control({position: 'bottomleft'});
+      var legend = L.control({position: 'bottomright'});
       legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend'), // create a div with a class "info legend"
                 grades = [0, 0.002, 0.02, 0.2],
@@ -40,7 +85,6 @@
             return div;
 
         };
-
 
       // Move zoom control to the top right corner of the map
       map.zoomControl.setPosition('topright');
